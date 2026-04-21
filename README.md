@@ -2,5 +2,5 @@
 
 # Alumnos:
 
-- Mauricio Tofalo
+- Mauricio Oscar Tófalo
 - Gabriel Martinez
