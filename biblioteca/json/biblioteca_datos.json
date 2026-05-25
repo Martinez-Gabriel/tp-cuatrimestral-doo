@@ -1,0 +1,20 @@
+[
+    {
+        "tipo": "Libro",
+        "id_material": "L001",
+        "titulo": "El Aleph",
+        "autor": "Jorge Luis Borges",
+        "disponible": true,
+        "isbn": "978-950-04",
+        "num_paginas": 180
+    },
+    {
+        "tipo": "Revista",
+        "id_material": "R001",
+        "titulo": "National Geographic",
+        "autor": "Varios",
+        "disponible": true,
+        "nro_edicion": 145,
+        "fecha_publicacion": "Mayo 2024"
+    }
+]
