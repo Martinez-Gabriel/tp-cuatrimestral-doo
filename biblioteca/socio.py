@@ -20,8 +20,10 @@ class Socio:
             lista_visible = "  (Ninguno)"
 
         return (
-            f"=== DATOS DEL SOCIO ===\n"
-            f"ID: {self.id_socio} | Nombre: {self.nombre} | Dni: {self.dni} | Domicilio: {self.domicilio} | Estado: [{estado}]\n"
+            f"----------------------------------------\n"
+            f"=== DATOS DEL SOCIO (ID: {self.id_socio})\n"
+            f"----------------------------------------\n"
+            f"Nombre: {self.nombre} | Dni: {self.dni} | Domicilio: {self.domicilio} | Estado: [{estado}]\n"
             f"Materiales prestados:\n{lista_visible}\n"
             f"======================="
         )
