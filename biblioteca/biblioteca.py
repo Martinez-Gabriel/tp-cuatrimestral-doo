@@ -1,21 +1,32 @@
-import json
-import os  
-from materiales import Libro, Revista
+from materiales import Material, Libro, Revista
+from socio import Socio
+from prestamo import Prestamo
+import persistencia 
 
 class Biblioteca:
     def __init__(self, nombre):
         self.nombre = nombre
-        self.lista_materiales = []
-        self.archivo_datos = "json/biblioteca_datos.json"
+        self.lista_materiales, self.socios, self.lista_prestamos = persistencia.cargar_todo()
         
-        # Apenas se crea la biblioteca, intentamos cargar lo que haya guardado
-        self.cargar_datos_json()
+
+        if self.socios:
+            Socio.contador_id = max(self.socios.keys()) + 1
+            
+        if self.lista_materiales:
+            Material.contador_id = max(m.id_material for m in self.lista_materiales) + 1
+            
+        if self.lista_prestamos:
+            Prestamo.contador_id = max(p.id_prestamo for p in self.lista_prestamos) + 1
+
+    def _guardar_todo(self):
+        persistencia.guardar_todo(self.lista_materiales, self.socios, self.lista_prestamos)
+
+    # SECCIÓN: MATERIALES
 
     def registrar_material(self, nuevo_material):
         self.lista_materiales.append(nuevo_material)
-        print(f"Éxito: Se registró '{nuevo_material.titulo}' correctamente.")
-        # Al crear algo, actualizamos el JSON
-        self.guardar_datos_json()
+        print(f"✅ Éxito: Se registró '{nuevo_material.titulo}' con ID automático: {nuevo_material.id_material}")
+        self._guardar_todo()
 
     def consultar_materiales_disponibles(self):
         print(f"\n--- Materiales Disponibles en: {self.nombre} ---")
@@ -37,63 +48,100 @@ class Biblioteca:
         if not encontrado:
             print("No se encontraron materiales con ese título.")
 
+    def buscar_material_por_id(self, id_buscar):
+        return next((m for m in self.lista_materiales if m.id_material == id_buscar), None)
     
-    def guardar_datos_json(self):
-        """Convierte la lista de objetos a un formato de diccionario para guardarlo en el archivo JSON"""
-        lista_para_guardar = []
+    # SECCIÓN: SOCIOS
+    
+    def registrar_socio(self, nombre, dni, domicilio):
+        nuevo_socio = Socio(nombre, dni, domicilio)
+        self.socios[nuevo_socio.id_socio] = nuevo_socio
+        print(f"✅ Éxito: Socio registrado. ID asignado automáticamente: {nuevo_socio.id_socio}")
+        self._guardar_todo()
+
+    def consultar_informacion_socio(self, id_socio):
+        socio_encontrado = self.socios.get(id_socio)
+        if socio_encontrado:
+            print(socio_encontrado.mostrar_socio())
+        else:
+            print(f"❌ Error: No se encontró ningún socio registrado con el ID {id_socio}.")
+
+    def listar_socios_habilitados(self):
+        """Recorre el diccionario de socios y muestra los que pueden operar"""
+        print(f"\n--- Socios Habilitados para Operar ---")
+        hay_habilitados = False
+        for s in self.socios.values():
+            if s.habilitado:
+                print(f"ID: {s.id_socio} | Nombre: {s.nombre} | DNI: {s.dni} | Domicilio: {s.domicilio}")
+                hay_habilitados = True
+        if not hay_habilitados:
+            print("No hay socios habilitados en este momento.")
+
+    # SECCIÓN: PRESTAMO
+
+    def registrar_prestamo(self, id_socio, id_material):
+        socio = self.socios.get(id_socio)
+        material = self.buscar_material_por_id(id_material)
+
+        if not socio:
+            print("❌ Error: El socio no existe.")
+            return False
+        if not material:
+            print("❌ Error: El material no existe.")
+            return False
+
+        if not socio.habilitado:
+            print(f"❌ Error: El socio {socio.nombre} está inhabilitado.")
+            return False
         
-        for m in self.lista_materiales:
-            # diccionario base 
-            datos_material = {
-                "tipo": m.__class__.__name__,  # tipo de material (Libro o Revista)
-                "id_material": m.id_material,
-                "titulo": m.titulo,
-                "autor": m.autor,
-                "disponible": m.disponible
-            }
-            
-            if isinstance(m, Libro):
-                datos_material["isbn"] = m.isbn
-                datos_material["num_paginas"] = m.num_paginas
-            
-            elif isinstance(m, Revista):
-                datos_material["nro_edicion"] = m.nro_edicion
-                datos_material["fecha_publicacion"] = m.fecha_publicacion
-                
-            lista_para_guardar.append(datos_material)
+        if not material.disponible:
+            print(f"❌ Error: El material '{material.titulo}' YA está prestado.")
+            return False
 
-        # Desde acá, le pedí ayuda a Gemini para escribir el JSON, porque no tengo ni la menor idea de como se hace jajaja
-        with open(self.archivo_datos, "w", encoding="utf-8") as f:
-            json.dump(lista_para_guardar, f, indent=4, ensure_ascii=False)
-
-    def cargar_datos_json(self):    
-        """Lee el archivo JSON (si existe) y crea la carpeta contenedora si hace falta"""
-        # Extraemos el nombre de la carpeta de la ruta (ej: "json")
-        carpeta = os.path.dirname(self.archivo_datos)
+        nuevo_prestamo = Prestamo(socio, material)
+        self.lista_prestamos.append(nuevo_prestamo)
         
-        # Si definiste una carpeta y no existe en la compu, la crea automáticamente
-        if carpeta and not os.path.exists(carpeta):
-            os.makedirs(carpeta)
-            return  # Como la carpeta es nueva, sabemos que está vacía. Cortamos acá.
+        material.disponible = False
+        if hasattr(socio, 'materiales_prestados'):
+            socio.materiales_prestados.append(material)
 
-        # Si la carpeta ya existía pero el archivo todavía no, no hacemos nada
-        if not os.path.exists(self.archivo_datos):
-            return  
+        print(f"✅ Préstamo registrado con éxito. ID Préstamo: {nuevo_prestamo.id_prestamo}")
+        self._guardar_todo()
+        return True
 
-        try:
-            with open(self.archivo_datos, "r", encoding="utf-8") as f:
-                lista_diccionarios = json.load(f)
-                
-            for datos in lista_diccionarios:
-                # Dependiendo del tipo que guardamos, reconstruimos el objeto correcto
-                if datos["tipo"] == "Libro":
-                    instancia = Libro(datos["id_material"], datos["titulo"], datos["autor"], datos["isbn"], datos["num_paginas"])
-                elif datos["tipo"] == "Revista":
-                    instancia = Revista(datos["id_material"], datos["titulo"], datos["autor"], datos["nro_edicion"], datos["fecha_publicacion"])
-                
-                # Le devolvemos su estado de disponibilidad real
-                instancia.disponible = datos["disponible"]
-                self.lista_materiales.append(instancia)
-                
-        except Exception as e:
-            print(f"Aviso: No se pudieron cargar los datos previos ({e}).")
+    def registrar_devolucion(self, id_material):
+        prestamo = next((p for p in self.lista_prestamos if p.material.id_material == id_material and p.fecha_devolucion is None), None)
+
+        if not prestamo:
+            print("❌ Error: No se encontró un préstamo activo para este material.")
+            return False
+
+        prestamo.registrar_devolucion()
+        prestamo.material.disponible = True
+        
+        if hasattr(prestamo.socio, 'materiales_prestados') and prestamo.material in prestamo.socio.materiales_prestados:
+            prestamo.socio.materiales_prestados.remove(prestamo.material)
+
+        print(f"✅ Devolución registrada con éxito para el material '{prestamo.material.titulo}'.")
+        self._guardar_todo()
+        return True
+
+    def listar_prestamos_activos(self):
+        print("\n--- PRÉSTAMOS ACTIVOS ---")
+        activos = [p for p in self.lista_prestamos if p.fecha_devolucion is None]
+        
+        if not activos:
+            print("No hay préstamos activos en este momento.")
+        else:
+            for p in activos:
+                print(p.mostrar_prestamo())
+
+    def listar_prestamos_vencidos(self):
+        print("\n--- PRÉSTAMOS VENCIDOS ---")
+        vencidos = [p for p in self.lista_prestamos if p.esta_vencido()]
+        
+        if not vencidos:
+            print("No hay préstamos vencidos. ¡Todo al día!")
+        else:
+            for p in vencidos:
+                print(p.mostrar_prestamo())

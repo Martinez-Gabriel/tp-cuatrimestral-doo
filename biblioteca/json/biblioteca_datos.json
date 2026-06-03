@@ -1,20 +1,59 @@
-[
-    {
-        "tipo": "Libro",
-        "id_material": "L001",
-        "titulo": "El Aleph",
-        "autor": "Jorge Luis Borges",
-        "disponible": true,
-        "isbn": "978-950-04",
-        "num_paginas": 180
-    },
-    {
-        "tipo": "Revista",
-        "id_material": "R001",
-        "titulo": "National Geographic",
-        "autor": "Varios",
-        "disponible": true,
-        "nro_edicion": 145,
-        "fecha_publicacion": "Mayo 2024"
-    }
-]
+{
+    "materiales": [
+        {
+            "id_material": 1,
+            "titulo": "Cien años de soledad",
+            "autor": "Gabriel García Márquez",
+            "disponible": true,
+            "tipo": "Libro",
+            "isbn": "978-8420471839",
+            "num_paginas": 496
+        },
+        {
+            "id_material": 2,
+            "titulo": "El principito",
+            "autor": "Antoine de Saint-Exupéry",
+            "disponible": true,
+            "tipo": "Libro",
+            "isbn": "978-8498381498",
+            "num_paginas": 96
+        },
+        {
+            "id_material": 3,
+            "titulo": "Don Quijote de la Mancha",
+            "autor": "Miguel de Cervantes",
+            "disponible": true,
+            "tipo": "Libro",
+            "isbn": "978-8424116347",
+            "num_paginas": 864
+        },
+        {
+            "id_material": 4,
+            "titulo": "Muy Interesante",
+            "autor": "Carmen Sabalete",
+            "disponible": true,
+            "tipo": "Revista",
+            "nro_edicion": 511,
+            "fecha_publicacion": "01/12/2023"
+        }
+    ],
+    "socios": [
+        {
+            "id_socio": 1,
+            "nombre": "Gabriel Martinez",
+            "dni": "39665115",
+            "domicilio": "Cervantes 1252",
+            "habilitado": true,
+            "materiales_prestados": []
+        },
+        {
+            "id_socio": 2,
+            "nombre": "Mauricio Tofalo",
+            "dni": "40123221",
+            "domicilio": "AndaASaber 123",
+            "habilitado": true,
+            "materiales_prestados": []
+        }
+    ],
+    "prestamos": []
+}
