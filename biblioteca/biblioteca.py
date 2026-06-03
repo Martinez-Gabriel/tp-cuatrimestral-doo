@@ -76,3 +76,72 @@ class Biblioteca:
                 hay_habilitados = True
         if not hay_habilitados:
             print("No hay socios habilitados en este momento.")
+
+    # SECCIÓN: PRESTAMO
+
+    def registrar_prestamo(self, id_socio, id_material):
+        socio = self.socios.get(id_socio)
+        material = self.buscar_material_por_id(id_material)
+
+        if not socio:
+            print("❌ Error: El socio no existe.")
+            return False
+        if not material:
+            print("❌ Error: El material no existe.")
+            return False
+
+        if not socio.habilitado:
+            print(f"❌ Error: El socio {socio.nombre} está inhabilitado.")
+            return False
+        
+        if not material.disponible:
+            print(f"❌ Error: El material '{material.titulo}' YA está prestado.")
+            return False
+
+        nuevo_prestamo = Prestamo(socio, material)
+        self.lista_prestamos.append(nuevo_prestamo)
+        
+        material.disponible = False
+        if hasattr(socio, 'materiales_prestados'):
+            socio.materiales_prestados.append(material)
+
+        print(f"✅ Préstamo registrado con éxito. ID Préstamo: {nuevo_prestamo.id_prestamo}")
+        self._guardar_todo()
+        return True
+
+    def registrar_devolucion(self, id_material):
+        prestamo = next((p for p in self.lista_prestamos if p.material.id_material == id_material and p.fecha_devolucion is None), None)
+
+        if not prestamo:
+            print("❌ Error: No se encontró un préstamo activo para este material.")
+            return False
+
+        prestamo.registrar_devolucion()
+        prestamo.material.disponible = True
+        
+        if hasattr(prestamo.socio, 'materiales_prestados') and prestamo.material in prestamo.socio.materiales_prestados:
+            prestamo.socio.materiales_prestados.remove(prestamo.material)
+
+        print(f"✅ Devolución registrada con éxito para el material '{prestamo.material.titulo}'.")
+        self._guardar_todo()
+        return True
+
+    def listar_prestamos_activos(self):
+        print("\n--- PRÉSTAMOS ACTIVOS ---")
+        activos = [p for p in self.lista_prestamos if p.fecha_devolucion is None]
+        
+        if not activos:
+            print("No hay préstamos activos en este momento.")
+        else:
+            for p in activos:
+                print(p.mostrar_prestamo())
+
+    def listar_prestamos_vencidos(self):
+        print("\n--- PRÉSTAMOS VENCIDOS ---")
+        vencidos = [p for p in self.lista_prestamos if p.esta_vencido()]
+        
+        if not vencidos:
+            print("No hay préstamos vencidos. ¡Todo al día!")
+        else:
+            for p in vencidos:
+                print(p.mostrar_prestamo())
