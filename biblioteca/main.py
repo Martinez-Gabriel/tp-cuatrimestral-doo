@@ -16,10 +16,16 @@ def programa_principal():
         print("5. Registrar un nuevo Socio")
         print("6. Consultar información de un Socio (por ID)")
         print("7. Listar socios habilitados para operar")
+        print("------------------------------------------")
+        print("8. Registrar préstamos de materiales")
+        print("9. Registrar devoluciones")
+        print("10. Listar préstamos activos")
+        print("11. Detectar préstamos vencidos")
         print("0. Volver / Salir")
         print("==========================================")
         
         opcion = input("Seleccione una opción: ")
+        pausar = True
 
         match opcion:
 
@@ -116,13 +122,50 @@ def programa_principal():
             case "7":
                 mi_biblioteca.listar_socios_habilitados()
 
+            # OPCIÓN 8: REGISTRAR PRESTAMOS DE MATERIALES
+            case "8":
+                print("\n[ REGISTRAR NUEVO PRÉSTAMO ]")
+                try:
+                    id_socio = int(input("👉 Ingrese el ID del socio: "))
+                    id_material = int(input("👉 Ingrese el ID del material a prestar: "))
+                except ValueError:
+                    print("❌ Error: Los IDs deben ser números enteros.")
+                    continue
+                
+                mi_biblioteca.registrar_prestamo(id_socio, id_material)
+
+            # OPCIÓN: REGISTRAR DEVOLUCIÓN
+            case "9":
+                print("\n[ REGISTRAR DEVOLUCIÓN ]")
+                try:
+                    id_material = int(input("👉 Ingrese el ID del material que devuelven: "))
+                except ValueError:
+                    print("❌ Error: El ID debe ser un número entero.")
+                    continue
+                    
+                mi_biblioteca.registrar_devolucion(id_material)
+
+            # OPCIÓN: LISTAR PRÉSTAMOS ACTIVOS
+            case "10":
+                mi_biblioteca.listar_prestamos_activos()
+
+            # OPCIÓN: DETECTAR PRÉSTAMOS VENCIDOS
+            case "11":
+                mi_biblioteca.listar_prestamos_vencidos()
+
             # OPCIÓN 0: SALIR
             case "0":
                 print("\n👋 Saliendo de Gestion de Biblioteca IFTS 11...")
+                pausar = False # No pausamos si el usuario ya se quiere ir
                 break
 
             case _:
                 print("❌ Opción inválida. Intente de nuevo.")
+                pausar = False
+
+        if pausar:
+            print("\n------------------------------------------")
+            input("Oprima ENTER para continuar...")
 
 if __name__ == "__main__":
     programa_principal()
