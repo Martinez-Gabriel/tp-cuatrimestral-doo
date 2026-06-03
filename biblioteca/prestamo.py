@@ -45,3 +45,13 @@ class Prestamo:
             f"Estado:       {estado}\n"
             f"----------------------------------------"
         )
+    
+    def to_dict(self):
+        return {
+            "id_prestamo": self.id_prestamo,
+            "id_socio": self.socio.id_socio,         
+            "id_material": self.material.id_material,
+            "fecha_prestamo": self.fecha_prestamo.isoformat(),
+            "fecha_limite": self.fecha_limite.isoformat(),
+            "fecha_devolucion": self.fecha_devolucion.isoformat() if self.fecha_devolucion else None
+        }
