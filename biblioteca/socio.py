@@ -27,3 +27,15 @@ class Socio:
             f"Materiales prestados:\n{lista_visible}\n"
             f"======================="
         )
+    
+    def to_dict(self):
+        return {
+            "id_socio": self.id_socio,
+            "nombre": self.nombre,
+            "dni": self.dni,
+            "domicilio": self.domicilio,
+            "habilitado": self.habilitado,
+            
+            # Guardamos solo los IDs de los libros que tiene bajo su brazo
+            "materiales_prestados": [m.id_material for m in self.materiales_prestados]
+        }
