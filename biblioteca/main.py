@@ -1,23 +1,128 @@
 from biblioteca import Biblioteca
+from materiales import Material, Libro, Revista
 
-# DESDE YA TE DIGO QUE ESTO LO ARMÓ GEMINI
-
-def mostrar_estado_sistema():
-    print("==================================================")
-    print("      ESTADO ACTUAL DE LA BIBLIOTECA (TESTING)    ")
-    print("==================================================")
-
-    # 1. Instanciamos la biblioteca 
-    # Al hacer esto, el __init__ ejecuta 'cargar_datos_json()' automáticamente
+def programa_principal():
     mi_biblioteca = Biblioteca("Biblioteca Central IFTS 11")
 
-    # 2. Mostramos los materiales cargados en el sistema
-    print("\n>>> Colección de Materiales en Memoria (levantados del JSON):")
-    mi_biblioteca.consultar_materiales_disponibles()
+    while True:
+        print("\n==========================================")
+        print("          GESTIÓN DE BIBLIOTECA IFTS 11   ")
+        print("==========================================")
+        print("1. Registrar material bibliográfico")
+        print("2. Consultar materiales disponibles")
+        print("3. Buscar materiales por distintos criterios")
+        print("4. Identificar el tipo de material")
+        print("------------------------------------------")
+        print("5. Registrar un nuevo Socio")
+        print("6. Consultar información de un Socio (por ID)")
+        print("7. Listar socios habilitados para operar")
+        print("0. Volver / Salir")
+        print("==========================================")
+        
+        opcion = input("Seleccione una opción: ")
 
-    print("\n==================================================")
-    print("          FIN DE LA MUESTRA DE DATOS              ")
-    print("==================================================")
+        match opcion:
+
+            # OPCIÓN 1: REGISTRAR MATERIAL (ID AUTOMÁTICO)
+            case "1":
+                print("\n[ REGISTRAR MATERIAL BIBLIOGRÁFICO ]")
+                print("a. Registrar un Libro")
+                print("b. Registrar una Revista")
+                sub_opcion = input("👉 Seleccione el tipo de material (a/b): ").lower().strip()
+
+                if sub_opcion not in ["a", "b"]:
+                    print("❌ Opción inválida. Cancelando registro.")
+                    continue
+
+                titulo = input("👉 Título: ").strip()
+                autor = input("👉 Autor: ").strip()
+
+                if not titulo or not autor:
+                    print("❌ Error: El título y el autor son obligatorios.")
+                    continue
+
+                if sub_opcion == "a":
+                    isbn = input("👉 ISBN: ").strip()
+                    try:
+                        paginas = int(input("👉 Cantidad de páginas: "))
+                        nuevo_material = Libro(titulo, autor, isbn, paginas)
+                    except ValueError:
+                        print("❌ Error: Las páginas deben ser un número entero.")
+                        continue
+                else:
+                    try:
+                        nro_edicion = int(input("👉 Número de edición: "))
+                    except ValueError:
+                        print("❌ Error: El número de edición debe ser un entero.")
+                        continue
+                    fecha_pub = input("👉 Fecha de publicación (DD/MM/AAAA): ").strip()
+                    nuevo_material = Revista(titulo, autor, nro_edicion, fecha_pub)
+
+                mi_biblioteca.registrar_material(nuevo_material)
+
+            # OPCIÓN 2: CONSULTAR DISPONIBLES
+            case "2":
+                mi_biblioteca.consultar_materiales_disponibles()
+
+            # OPCIÓN 3: BUSCAR POR CRITERIOS (TÍTULO)
+            case "3":
+                print("\n[ BUSCAR MATERIAL ]")
+                criterio = input("👉 Ingrese el título (o parte del título) a buscar: ").strip()
+                if criterio:
+                    mi_biblioteca.buscar_por_titulo(criterio)
+                else:
+                    print("❌ Error: Debe ingresar un texto para buscar.")
+
+            # OPCIÓN 4: IDENTIFICAR TIPO DE MATERIAL
+            case "4":
+                print("\n[ IDENTIFICAR TIPO DE MATERIAL ]")
+                try:
+                    id_buscar = int(input("👉 Ingrese el ID del material a identificar: "))
+                except ValueError:
+                    print("❌ Error: El ID debe ser un número entero.")
+                    continue
+
+                material_encontrado = mi_biblioteca.buscar_material_por_id(id_buscar)
+
+                if material_encontrado:
+                    print(f"El material con ID {id_buscar} es de tipo:")
+                    print(f"{material_encontrado.mostrar_informacion()}")
+                else:
+                    print(f"❌ Error: No existe ningún material con el ID {id_buscar}.")
+
+            # OPCIÓN 5: REGISTRAR SOCIO
+            case "5":
+                print("\n[ FORMULARIO: REGISTRAR SOCIO ]")
+                nombre = input("👉 Ingrese Nombre completo: ")
+                dni = input("👉 Ingrese DNI (sin puntos): ")
+                domicilio = input("👉 Ingrese Domicilio: ")
+                
+                if nombre.strip() == "" or dni.strip() == "":
+                    print("❌ Error: Nombre y DNI son campos obligatorios.")
+                    continue
+                
+                mi_biblioteca.registrar_socio(nombre, dni, domicilio)
+
+            # OPCIÓN 6: CONSULTAR SOCIO
+            case "6":
+                print("\n[ CONSULTAR FICHA DE SOCIO ]")
+                try:
+                    id_buscar = int(input("👉 Ingrese el ID del socio a consultar: "))
+                    mi_biblioteca.consultar_informacion_socio(id_buscar)
+                except ValueError:
+                    print("❌ Error: El ID debe ser un número entero.")
+
+            # OPCIÓN 7: MOSTRAR SOCIOS HABILITADOS
+            case "7":
+                mi_biblioteca.listar_socios_habilitados()
+
+            # OPCIÓN 0: SALIR
+            case "0":
+                print("\n👋 Saliendo de Gestion de Biblioteca IFTS 11...")
+                break
+
+            case _:
+                print("❌ Opción inválida. Intente de nuevo.")
 
 if __name__ == "__main__":
-    mostrar_estado_sistema()
+    programa_principal()
